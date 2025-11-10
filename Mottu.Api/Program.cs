@@ -30,18 +30,33 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("Connection String 'DefaultConnection' not found.");
+    // In testing environment, allow empty connection string
+    if (builder.Environment.EnvironmentName != "Testing")
+    {
+        throw new InvalidOperationException("Connection String 'DefaultConnection' not found.");
+    }
 }
 
-builder.Services.AddDbContext<MottuDbContext>(options =>
+if (builder.Environment.EnvironmentName == "Testing")
 {
-    options.UseNpgsql(connectionString,
-        npgsqlOptions => 
-        {
-            npgsqlOptions.MigrationsAssembly(typeof(MottuDbContext).Assembly.FullName);
-        }
-    );
-});
+    // Use InMemory database for testing (will be overridden by test base)
+    builder.Services.AddDbContext<MottuDbContext>(options =>
+    {
+        options.UseInMemoryDatabase("TestDb");
+    });
+}
+else
+{
+    builder.Services.AddDbContext<MottuDbContext>(options =>
+    {
+        options.UseNpgsql(connectionString,
+            npgsqlOptions => 
+            {
+                npgsqlOptions.MigrationsAssembly(typeof(MottuDbContext).Assembly.FullName);
+            }
+        );
+    });
+}
 
 // --- RabbitMQ Configuration ---
 var rabbitMQConnection = builder.Configuration["RABBITMQ_CONNECTION"]
@@ -538,73 +553,87 @@ app.MapPut("/locacoes/{id:int}/devolucao", async (MottuDbContext db, int id, Loc
 .WithName("ReturnRental");
 
 // --- RABBITMQ CONSUMER FOR 2024 MOTOS ---
-var messageServiceInstance = app.Services.GetRequiredService<IMessageService>();
-var dbContextFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
-
-Task.Run(async () =>
+// Only start consumer if not in testing environment
+if (app.Environment.EnvironmentName != "Testing" && !string.IsNullOrEmpty(rabbitMQConnection))
 {
-    var factory = new ConnectionFactory
+    var messageServiceInstance = app.Services.GetRequiredService<IMessageService>();
+    var dbContextFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+
+    Task.Run(async () =>
     {
-        Uri = new Uri(rabbitMQConnection)
-    };
-
-    using var connection = factory.CreateConnection();
-    using var channel = connection.CreateModel();
-
-    channel.QueueDeclare("moto_cadastrada_queue", durable: true, exclusive: false, autoDelete: false);
-
-    var consumer = new RabbitMQ.Client.Events.EventingBasicConsumer(channel);
-    consumer.Received += async (model, ea) =>
-    {
-        var body = ea.Body.ToArray();
-        var message = Encoding.UTF8.GetString(body);
-
         try
         {
-            var motoEvent = JsonSerializer.Deserialize<MotoRegisteredEvent>(message);
-
-            if (motoEvent != null && motoEvent.Ano == 2024)
+            var factory = new ConnectionFactory
             {
-                // Create notification for 2024 motos
-                using var scope = dbContextFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<MottuDbContext>();
+                Uri = new Uri(rabbitMQConnection)
+            };
 
-                // Generate notification ID based on timestamp + motoId
-                var notificationId = Math.Abs((DateTime.UtcNow.Ticks.ToString() + motoEvent.MotoId.ToString()).GetHashCode());
+            using var connection = factory.CreateConnection();
+            using var channel = connection.CreateModel();
 
-                var notification = new Notificacao
+            channel.QueueDeclare("moto_cadastrada_queue", durable: true, exclusive: false, autoDelete: false);
+
+            var consumer = new RabbitMQ.Client.Events.EventingBasicConsumer(channel);
+            consumer.Received += async (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+
+                try
                 {
-                    Id = notificationId,
-                    MotoId = motoEvent.MotoId,
-                    AnoMoto = motoEvent.Ano,
-                    Mensagem = $"Moto {motoEvent.Modelo} (License Plate: {motoEvent.Placa}) from 2024 was registered.",
-                    DataNotificacao = DateTime.UtcNow
-                };
+                    var motoEvent = JsonSerializer.Deserialize<MotoRegisteredEvent>(message);
 
-                db.Notificacoes.Add(notification);
-                await db.SaveChangesAsync();
+                    if (motoEvent != null && motoEvent.Ano == 2024)
+                    {
+                        // Create notification for 2024 motos
+                        using var scope = dbContextFactory.CreateScope();
+                        var db = scope.ServiceProvider.GetRequiredService<MottuDbContext>();
 
-                Console.WriteLine($"Notification created for 2024 moto: {motoEvent.Placa}");
-            }
+                        // Generate notification ID based on timestamp + motoId
+                        var notificationId = Math.Abs((DateTime.UtcNow.Ticks.ToString() + motoEvent.MotoId.ToString()).GetHashCode());
 
-            channel.BasicAck(ea.DeliveryTag, false);
+                        var notification = new Notificacao
+                        {
+                            Id = notificationId,
+                            MotoId = motoEvent.MotoId,
+                            AnoMoto = motoEvent.Ano,
+                            Mensagem = $"Moto {motoEvent.Modelo} (License Plate: {motoEvent.Placa}) from 2024 was registered.",
+                            DataNotificacao = DateTime.UtcNow
+                        };
+
+                        db.Notificacoes.Add(notification);
+                        await db.SaveChangesAsync();
+
+                        Console.WriteLine($"Notification created for 2024 moto: {motoEvent.Placa}");
+                    }
+
+                    channel.BasicAck(ea.DeliveryTag, false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing message: {ex.Message}");
+                    channel.BasicNack(ea.DeliveryTag, false, true); // Requeue
+                }
+            };
+
+            channel.BasicConsume("moto_cadastrada_queue", autoAck: false, consumer);
+
+            Console.WriteLine("RabbitMQ consumer started. Waiting for messages...");
+
+            // Keep consumer running
+            await Task.Delay(Timeout.Infinite);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error processing message: {ex.Message}");
-            channel.BasicNack(ea.DeliveryTag, false, true); // Requeue
+            Console.WriteLine($"Error starting RabbitMQ consumer: {ex.Message}");
         }
-    };
-
-    channel.BasicConsume("moto_cadastrada_queue", autoAck: false, consumer);
-
-    Console.WriteLine("RabbitMQ consumer started. Waiting for messages...");
-
-    // Keep consumer running
-    await Task.Delay(Timeout.Infinite);
-});
+    });
+}
 
 app.Run();
+
+// Make Program class accessible for testing
+public partial class Program { }
 
 // Helper classes
 record MotoRegisteredEvent(int MotoId, int Ano, string Modelo, string Placa, DateTime DataCadastro);
