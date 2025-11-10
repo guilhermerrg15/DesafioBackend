@@ -1,20 +1,4 @@
-# Guia de Apresentação da Aplicação
-
-Este documento explica como funciona cada parte da aplicação para que você possa apresentá-la com confiança.
-
----
-
-## 📋 Índice
-
-1. [Visão Geral da Arquitetura](#1-visão-geral-da-arquitetura)
-2. [Estrutura do Projeto](#2-estrutura-do-projeto)
-3. [Fluxo de Dados](#3-fluxo-de-dados)
-4. [Sistema de Mensageria (RabbitMQ)](#4-sistema-de-mensageria-rabbitmq)
-5. [Geração de IDs](#5-geração-de-ids)
-6. [Endpoints e Regras de Negócio](#6-endpoints-e-regras-de-negócio)
-7. [Banco de Dados](#7-banco-de-dados)
-8. [Testes](#8-testes)
-9. [Docker e Deploy](#9-docker-e-deploy)
+# Resumo da Aplicação
 
 ---
 
