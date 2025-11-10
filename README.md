@@ -1,8 +1,8 @@
-# 🏍️ API - Sistema de Gerenciamento de Aluguel de Motos
+# API - Sistema de Gerenciamento de Aluguel de Motos
 
 API REST desenvolvida em .NET 9.0 para gerenciar aluguel de motos e entregadores, com sistema de mensageria para notificações.
 
-## 📋 Índice
+## Índice
 
 - [Requisitos](#requisitos)
 - [Tecnologias](#tecnologias)
@@ -535,7 +535,7 @@ No Swagger você pode:
 
 ---
 
-## 🧪 Testes Unitários
+## Testes Unitários
 
 
 ### Executar Testes
