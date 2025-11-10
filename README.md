@@ -1,6 +1,6 @@
 # 🏍️ API - Sistema de Gerenciamento de Aluguel de Motos
 
-API RESTful desenvolvida em .NET 9.0 para gerenciar aluguel de motos e entregadores, com sistema de mensageria para notificações.
+API REST desenvolvida em .NET 9.0 para gerenciar aluguel de motos e entregadores, com sistema de mensageria para notificações.
 
 ## 📋 Índice
 
@@ -17,117 +17,44 @@ API RESTful desenvolvida em .NET 9.0 para gerenciar aluguel de motos e entregado
 - [Swagger](#swagger)
 - [Regras de Negócio](#regras-de-negócio)
 - [Testes Unitários](#testes-unitários)
-- [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🔧 Requisitos
-
-- Docker e Docker Compose
-- .NET 9.0 SDK (para desenvolvimento local e migrations)
-- Git
-
----
-
-## 🛠️ Tecnologias
+## Tecnologias
 
 - **.NET 9.0** - Framework principal
 - **C#** - Linguagem de programação
-- **PostgreSQL 15** - Banco de dados
+- **PostgreSQL** - Banco de dados
 - **Entity Framework Core** - ORM
 - **RabbitMQ** - Sistema de mensageria
 - **Docker** - Containerização
 - **Swagger/OpenAPI** - Documentação da API
-- **xUnit** - Framework de testes
+- **xUnit** - Framework de testes unitários
 
 ---
+Como Utilizar a Aplicação
 
-## 📁 Estrutura do Projeto
-
-```
-Projeto/
-├── Api/                    # Camada de API (Endpoints)
-├── Core/                   # Camada de Domínio (Entidades, DTOs, Services)
-│   ├── Entities/           # Entidades do domínio
-│   ├── DTO/                # Data Transfer Objects
-│   └── Services/           # Interfaces de serviços
-├── Infrastructure/         # Camada de Infraestrutura
-│   ├── Data/               # DbContext e Migrations
-│   └── Services/            # Implementações de serviços
-├── Tests/                  # Testes unitários
-└── docker-compose.yml      # Configuração Docker
-```
-
----
-
-## 🚀 Como Executar
-
-### Opção 1: Docker Compose (Recomendado)
-
-1. **Clone o repositório** (se ainda não tiver):
+### 1. Clone o repositório:
 ```bash
 git clone <seu-repositorio>
 cd Projeto
 ```
 
-2. **Inicie os containers**:
+### 2. Subir a aplicação
 ```bash
 docker-compose up -d --build
 ```
 
-3. **Aguarde os serviços iniciarem** (cerca de 10-15 segundos)
-
-4. **Aplique as migrations** (primeira vez):
+### 3. Aplicar migrations (primeira vez)
 ```bash
 dotnet ef database update --project Infrastructure/Infrastructure.csproj --startup-project Api/Api.csproj --connection "Host=localhost;Port=5432;Database=appdb;Username=appuser;Password=apppass"
 ```
 
-5. **Acesse a API**:
-   - API: http://localhost:5001
-   - Swagger: http://localhost:5001/swagger
-   - RabbitMQ Management: http://localhost:15672
-
-### Opção 2: Desenvolvimento Local
-
-1. **Configure o banco de dados**:
-   - Certifique-se de que o PostgreSQL está rodando
-   - Atualize a connection string em `appsettings.json`
-
-2. **Restaure as dependências**:
-```bash
-dotnet restore
-```
-
-3. **Aplique as migrations**:
-```bash
-dotnet ef database update --project Infrastructure/Infrastructure.csproj --startup-project Api/Api.csproj
-```
-
-4. **Execute a aplicação**:
-```bash
-cd Api
-dotnet run
-```
-
----
-
-## ⚡ Início Rápido (5 minutos)
-
-### 1. Subir a aplicação
-```bash
-docker-compose up -d --build
-```
-
-### 2. Aplicar migrations (primeira vez)
-```bash
-dotnet ef database update --project Infrastructure/Infrastructure.csproj --startup-project Api/Api.csproj --connection "Host=localhost;Port=5432;Database=appdb;Username=appuser;Password=apppass"
-```
-
-### 3. Acessar
+### 4. Acessar
 - **Swagger**: http://localhost:5001/swagger
 - **API**: http://localhost:5001
 
-### 4. Criar uma Locação Completa
+### 5. Criar uma Locação Completa
 
 1. **Cadastrar Moto**
    ```bash
@@ -177,12 +104,12 @@ dotnet ef database update --project Infrastructure/Infrastructure.csproj --start
 
 ---
 
-## 📡 Endpoints da API
+## Endpoints da API
 
-### 🏍️ Moto
+### Moto
 
 #### POST /motos
-Cadastra uma nova moto.
+Cadastra uma nova moto
 
 **Request Body:**
 ```json
@@ -205,13 +132,13 @@ Cadastra uma nova moto.
 
 **Validações:**
 - Placa deve ser única
-- ID gerado automaticamente baseado na placa (hash)
+- ID gerado automaticamente baseado na placa utilizando hash
 - Publica evento "moto cadastrada" no RabbitMQ
 
 ---
 
 #### GET /motos
-Lista todas as motos ou filtra por placa.
+Lista todas as motos ou filtra por placa
 
 **Query Parameters:**
 - `placa` (opcional): Filtra motos pela placa
@@ -235,14 +162,14 @@ Lista todas as motos ou filtra por placa.
 ---
 
 #### GET /motos/{id}
-Busca uma moto específica por ID.
+Busca uma moto específica por ID
 
 **Response:** `200 OK` ou `404 Not Found`
 
 ---
 
 #### PUT /motos/{id}/placa
-Atualiza a placa de uma moto.
+Atualiza a placa de uma moto
 
 **Request Body:**
 ```json
@@ -256,7 +183,7 @@ Atualiza a placa de uma moto.
 ---
 
 #### DELETE /motos/{id}
-Remove uma moto.
+Remove uma moto
 
 **Validações:**
 - Não permite remover se houver locações ativas
@@ -265,10 +192,10 @@ Remove uma moto.
 
 ---
 
-### 👤 Entregador
+### Entregador
 
 #### POST /entregadores
-Cadastra um novo entregador.
+Cadastra um novo entregador
 
 **Request Body:**
 ```json
@@ -281,12 +208,12 @@ Cadastra um novo entregador.
 }
 ```
 
-**Tipos CNH válidos:** `A`, `B`, `AB` ou `A+B`
+**Tipos CNH válidos:** `A`, `B` ou `A+B`
 
 **Validações:**
 - CNPJ deve ser único
 - Número CNH deve ser único
-- Tipo CNH deve ser A, B, AB ou A+B
+- Tipo CNH deve ser A, B ou A+B
 - ID gerado automaticamente baseado no CNPJ (hash)
 
 **Response:** `201 Created`
@@ -294,14 +221,14 @@ Cadastra um novo entregador.
 ---
 
 #### POST /entregadores/{id}/cnh
-Faz upload da foto da CNH do entregador.
+Faz upload da foto da CNH do entregador
 
 **Request:** `multipart/form-data`
 - Campo: `file` (arquivo PNG ou BMP)
 
 **Validações:**
 - Entregador deve existir
-- Entregador deve ter CNH tipo A, AB ou A+B (para alugar motos)
+- Entregador deve ter CNH tipo A ou A+B (para alugar motos)
 - Arquivo deve ser PNG ou BMP
 
 **Response:** `200 OK`
@@ -315,10 +242,10 @@ Faz upload da foto da CNH do entregador.
 
 ---
 
-### 📦 Locação
+### Locação
 
 #### POST /locacoes
-Cria uma nova locação de moto.
+Cria uma nova locação de moto
 
 **Request Body:**
 ```json
@@ -337,7 +264,7 @@ Cria uma nova locação de moto.
 - `50 dias` - R$ 18,00/dia (Total: R$ 900,00)
 
 **Validações:**
-- Entregador deve ter CNH tipo A, AB ou A+B
+- Entregador deve ter CNH tipo A ou A+B
 - Moto não pode estar locada
 - Data início = primeiro dia após criação (meia-noite do dia seguinte)
 - Data término prevista = data início + plano dias
@@ -347,7 +274,7 @@ Cria uma nova locação de moto.
 ---
 
 #### PUT /locacoes/{id}/devolucao
-Registra a devolução de uma locação.
+Registra a devolução de uma locação
 
 **Request Body:**
 ```json
@@ -391,9 +318,7 @@ Busca uma locação específica por ID.
 
 ---
 
-## 💡 Exemplos de Uso
-
-### Exemplo Completo: Fluxo de Locação
+### Exemplo Completo de Fluxo de Locação com curl (pelo terminal)
 
 ```bash
 # 1. Cadastrar uma moto
@@ -439,7 +364,7 @@ curl -X PUT http://localhost:5001/locacoes/{locacaoId}/devolucao \
 
 ---
 
-## ⚙️ Configuração
+## Configuração
 
 ### Variáveis de Ambiente
 
@@ -471,11 +396,6 @@ As configurações podem ser definidas no `docker-compose.yml` ou `appsettings.j
 - User: `appuser`
 - Password: `apppass`
 
-**RabbitMQ Management:**
-- URL: http://localhost:15672
-- User: `admin`
-- Password: `secure_pass_2024!`
-
 ---
 
 ## 🗄️ Banco de Dados
@@ -487,22 +407,7 @@ As configurações podem ser definidas no `docker-compose.yml` ou `appsettings.j
 - **Locacoes**: Armazena as locações realizadas
 - **Notificacoes**: Armazena notificações de motos de 2024
 
-### Visualizar o Banco
-
-#### Opção 1: psql (Terminal)
-
-```bash
-# Acessar o psql interativo
-docker-compose exec postgres_db psql -U appuser -d appdb
-
-# Comandos úteis no psql:
-\dt                    # Listar todas as tabelas
-\d "Motos"             # Descrever estrutura de uma tabela
-SELECT * FROM "Motos";  # Ver dados de uma tabela
-\q                     # Sair do psql
-```
-
-#### Opção 2: Executar comandos SQL diretamente
+### Visualizar o Banco (via Terminal)
 
 ```bash
 # Listar tabelas
@@ -515,38 +420,28 @@ docker-compose exec postgres_db psql -U appuser -d appdb -c "SELECT * FROM \"Mot
 docker-compose exec postgres_db psql -U appuser -d appdb -c "\d \"Entregadores\""
 ```
 
-#### Opção 3: Ferramentas Gráficas
+#### Outra Opção
 
-**pgAdmin** (Recomendado)
+**pgAdmin**
 - Download: https://www.pgadmin.org/download/
 - Host: `localhost`, Port: `5432`, Database: `appdb`, Username: `appuser`, Password: `apppass`
 
-**DBeaver** (Gratuito e Multiplataforma)
-- Download: https://dbeaver.io/download/
-- Configuração: Driver PostgreSQL, Host: `localhost`, Port: `5432`, Database: `appdb`, Username: `appuser`, Password: `apppass`
-
-**TablePlus** (macOS/Windows)
-- Download: https://tableplus.com/
-- Type: PostgreSQL, Host: `localhost`, Port: `5432`, Database: `appdb`, Username: `appuser`, Password: `apppass`
-
 ---
 
-## 📨 Sistema de Mensageria
+## Sistema de Mensageria
 
-### RabbitMQ
+A aplicação utiliza o RabbitMQ para publicar eventos e processar notificações de forma assíncrona
 
-A aplicação utiliza RabbitMQ para publicar eventos e processar notificações de forma assíncrona.
-
-**Acesso ao Management UI:**
+**Acesso:**
 - URL: http://localhost:15672
 - Usuário: `admin`
 - Senha: `secure_pass_2024!`
 
 ### Como Funciona
 
-1. **Quando uma moto é cadastrada** → Um evento é publicado no RabbitMQ
-2. **Um consumidor escuta esse evento** → Processa a mensagem
-3. **Se a moto for de 2024** → Cria automaticamente uma notificação no banco de dados
+1. Quando uma moto é cadastrada um evento é publicado no RabbitMQ
+2. Um consumidor escuta esse evento e processa a mensagem
+3. Se a moto for de 2024 cria automaticamente uma notificação no banco de dados
 
 ### Fluxo Completo
 
@@ -555,37 +450,14 @@ Cliente → POST /motos → API salva moto → Publica evento "moto.cadastrada" 
 Consumer processa → Se Ano == 2024 → Cria Notificação no banco
 ```
 
-### Componentes
-
-- **Publisher**: `RabbitMQMessageService.cs` - Publica eventos quando motos são cadastradas
-- **Consumer**: `Program.cs` - Processa mensagens e cria notificações para motos de 2024
-- **Exchange**: `app_exchange` (tipo: topic) - Roteia mensagens
-- **Queue**: `moto_cadastrada_queue` - Armazena mensagens
-
 ### Eventos Publicados
 
 **moto.cadastrada**
 - Publicado quando uma moto é cadastrada
 - Contém: MotoId, Ano, Modelo, Placa, DataCadastro
 
-### Como Visualizar e Verificar
 
-#### 1. RabbitMQ Management UI
-
-**Acesso:**
-- URL: http://localhost:15672
-- Usuário: `admin`
-- Senha: `secure_pass_2024!`
-
-**O que verificar:**
-
-- **Connections**: Deve ver 2 conexões ativas (Publisher e Consumer)
-- **Channels**: Deve ver 2 canais
-- **Exchanges**: Procure por `app_exchange` (tipo: topic, Durable)
-- **Queues**: Procure por `moto_cadastrada_queue` (deve ter 1 Consumer)
-- **Mensagens**: Clique na fila → "Get messages" para ver o conteúdo JSON
-
-#### 2. Logs da API
+#### Logs da API
 
 ```bash
 docker-compose logs api | grep -i "rabbitmq\|consumidor\|notificação"
@@ -597,7 +469,7 @@ RabbitMQ consumer started. Waiting for messages...
 Notification created for 2024 moto: ABCD123
 ```
 
-#### 3. Banco de Dados
+#### Banco de Dados
 
 ```bash
 # Verificar notificações criadas
@@ -606,8 +478,7 @@ docker-compose exec postgres_db psql -U appuser -d appdb -c "SELECT * FROM \"Not
 # Verificar motos de 2024
 docker-compose exec postgres_db psql -U appuser -d appdb -c "SELECT \"Id\", \"Ano\", \"Placa\", \"Modelo\" FROM \"Motos\" WHERE \"Ano\" = 2024;"
 ```
-
-### Como Testar
+### Testes
 
 #### Teste 1: Cadastrar Moto de 2024
 
@@ -623,13 +494,13 @@ docker-compose exec postgres_db psql -U appuser -d appdb -c "SELECT \"Id\", \"An
 ```
 
 4. O que deve acontecer:
-   - ✅ Moto cadastrada (resposta 201)
-   - ✅ Mensagem publicada no RabbitMQ
-   - ✅ Consumidor processa a mensagem
-   - ✅ Notificação criada no banco
+   - Moto cadastrada (resposta 201)
+   - Mensagem publicada no RabbitMQ
+   - Consumidor processa a mensagem
+   - Notificação criada no banco
 
 5. Verificar:
-   - RabbitMQ Management: Ver mensagem na fila
+   - RabbitMQ: Ver mensagem na fila
    - Banco: `SELECT * FROM "Notificacoes" WHERE "AnoMoto" = 2024;`
 
 #### Teste 2: Cadastrar Moto de Outro Ano
@@ -645,13 +516,13 @@ docker-compose exec postgres_db psql -U appuser -d appdb -c "SELECT \"Id\", \"An
 ```
 
 3. O que deve acontecer:
-   - ✅ Moto cadastrada
-   - ✅ Mensagem publicada no RabbitMQ
-   - ✅ Consumidor processa, mas **NÃO cria notificação** (ano != 2024)
+   - Moto cadastrada
+   - Mensagem publicada no RabbitMQ
+   - Consumidor processa, mas não cria notificação (ano != 2024)
 
 ---
 
-## 📚 Swagger
+## Swagger
 
 A documentação interativa da API está disponível em:
 
@@ -661,56 +532,11 @@ No Swagger você pode:
 - Ver todos os endpoints
 - Testar requisições diretamente
 - Ver exemplos de request/response
-- Entender os modelos de dados
-
----
-
-## 🔍 Regras de Negócio
-
-### Moto
-- ✅ Placa deve ser única
-- ✅ Não pode ser removida se tiver locações ativas
-- ✅ Ao ser cadastrada, publica evento no RabbitMQ
-- ✅ ID gerado automaticamente baseado na placa (hash)
-
-### Entregador
-- ✅ CNPJ deve ser único
-- ✅ Número CNH deve ser único
-- ✅ Tipo CNH: A, B, AB ou A+B
-- ✅ Apenas CNH tipo A, AB ou A+B podem alugar motos
-- ✅ Foto CNH: PNG ou BMP apenas
-- ✅ ID gerado automaticamente baseado no CNPJ (hash)
-
-### Locação
-- ✅ Data início = primeiro dia após criação (meia-noite do dia seguinte)
-- ✅ Planos: 7, 15, 30, 45 ou 50 dias
-- ✅ Valores por plano:
-  - 7d: R$ 30,00/dia (Total: R$ 210,00)
-  - 15d: R$ 28,00/dia (Total: R$ 420,00)
-  - 30d: R$ 22,00/dia (Total: R$ 660,00)
-  - 45d: R$ 20,00/dia (Total: R$ 900,00)
-  - 50d: R$ 18,00/dia (Total: R$ 900,00)
-- ✅ Multas (devolução antecipada):
-  - 7 dias: 20% sobre diárias não usadas
-  - 15 dias: 40% sobre diárias não usadas
-  - Outros planos: Desconto das diárias não usadas
-- ✅ Diárias adicionais (devolução atrasada): R$ 50,00/dia
-
-### Validações Importantes
-
-- ✅ Placa de moto deve ser única
-- ✅ CNPJ de entregador deve ser único
-- ✅ Número CNH deve ser único
-- ✅ Tipo CNH: A, B, AB ou A+B (apenas A, AB e A+B podem alugar motos)
-- ✅ Não pode remover moto com locação ativa
-- ✅ Não pode locar moto já locada
-- ✅ Foto CNH: apenas PNG ou BMP
 
 ---
 
 ## 🧪 Testes Unitários
 
-O projeto inclui testes unitários abrangentes cobrindo as funcionalidades principais.
 
 ### Executar Testes
 
@@ -720,15 +546,13 @@ dotnet test Tests/Tests.csproj
 
 ### Cobertura de Testes
 
-**68 testes** cobrindo:
-
 1. **ID Generation Tests** (`IdGeneratorTests.cs`)
    - Geração de ID para entregadores (baseado em CNPJ)
    - Geração de ID para motos (baseado em placa)
    - Consistência e unicidade de IDs
 
 2. **CNH Validation Tests** (`CnhValidationTests.cs`)
-   - Validação de tipos CNH válidos (A, B, AB, A+B)
+   - Validação de tipos CNH válidos (A, B, A+B)
    - Validação de tipos CNH inválidos
    - Validação case-insensitive
    - Validação para aluguel de motos
@@ -752,14 +576,14 @@ dotnet test Tests/Tests.csproj
 
 ---
 
-## 🐛 Troubleshooting
+## Verificação de Problemas
 
 ### API não inicia
 - Verifique se o PostgreSQL está rodando: `docker-compose ps`
 - Verifique os logs: `docker-compose logs api`
 
 ### Erro de conexão com banco
-- Certifique-se de que as migrations foram aplicadas
+- Verifique se as migrations foram aplicadas
 - Verifique a connection string no `docker-compose.yml`
 
 ### RabbitMQ não conecta
@@ -774,39 +598,21 @@ dotnet test Tests/Tests.csproj
 ### Mensagens não estão sendo processadas
 - Verifique se o consumer está rodando: `docker-compose logs api | grep "RabbitMQ consumer started"`
 - Verifique conexão com RabbitMQ: `docker-compose logs api | grep -i "rabbitmq\|connection"`
-- Verifique se a fila existe no RabbitMQ Management UI
+- Verifique se a fila existe no RabbitMQ
 
 ### Notificações não estão sendo criadas
 - Verifique se a moto é de 2024
 - Verifique se o consumidor processou a mensagem: `docker-compose logs api | grep "Notification created"`
 - Verifique erros no processamento: `docker-compose logs api | grep -i "erro\|exception"`
 
-### RabbitMQ Management não abre
+### RabbitMQ não abre
 - Verifique se o container está rodando: `docker-compose ps rabbitmq`
 - Verifique se a porta está mapeada: `docker-compose ps | grep 15672`
-- Verifique as credenciais: Usuário: `admin`, Senha: `secure_pass_2024!`
+- Verifique as credenciais (usuário e senha)
 
 ---
 
-## 📝 Notas Importantes
-
-1. **Primeira execução**: Sempre execute as migrations antes de usar a API
-2. **Dados de teste**: Use o Swagger para criar dados de teste facilmente
-3. **Logs**: Os logs do consumidor RabbitMQ aparecem no console da API
-4. **Storage**: Arquivos de CNH são salvos em `./storage` (mapeado para `/app/storage` no container)
-5. **IDs**: IDs são gerados automaticamente baseados em hash (CNPJ para entregadores, placa para motos)
-6. **Colisões**: Se houver colisão de hash, o sistema adiciona um sufixo numérico automaticamente
-
----
-
-## 📞 Suporte
-
-Para mais informações sobre os endpoints, consulte:
 - Swagger: http://localhost:5001/swagger
 - Swagger de referência: https://app.swaggerhub.com/apis-docs/App/app_backend/1.0.0
 
 ---
-
-## 📄 Licença
-
-Este projeto foi desenvolvido como parte de um desafio técnico.
