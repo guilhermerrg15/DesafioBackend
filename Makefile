@@ -43,7 +43,18 @@ build:
 # Docker commands
 up:
 	@echo "Starting Docker containers..."
-	docker-compose up -d
+	@echo "Step 1: Starting PostgreSQL and RabbitMQ..."
+	docker-compose up -d postgres_db rabbitmq
+	@echo "Waiting for services to be ready..."
+	@sleep 5
+	@echo "Step 2: Starting API..."
+	docker-compose up -d mottu_api
+	@echo "Waiting for API to initialize..."
+	@sleep 3
+	@echo "Services started! Checking status..."
+	@docker-compose ps
+	@echo ""
+	@echo "Swagger should be available at: http://localhost:5001/swagger"
 
 down:
 	@echo "Stopping Docker containers..."
