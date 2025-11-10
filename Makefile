@@ -1,12 +1,10 @@
-.PHONY: help test test-unit test-integration test-verbose build up down restart logs logs-api logs-db logs-rabbitmq clean migrate
+.PHONY: help test test-unit test-integration build up down restart logs logs-api logs-db logs-rabbitmq clean migrate
 
-# Default target
 help:
 	@echo "Available commands:"
 	@echo "  make test              - Run all tests"
 	@echo "  make test-unit         - Run only unit tests"
 	@echo "  make test-integration  - Run only integration tests"
-	@echo "  make test-verbose      - Run tests with verbose output"
 	@echo "  make build             - Build the solution"
 	@echo "  make up                - Start all Docker containers"
 	@echo "  make down              - Stop all Docker containers"
@@ -18,7 +16,7 @@ help:
 	@echo "  make migrate           - Apply database migrations"
 	@echo "  make clean             - Clean build artifacts and stop containers"
 
-# Test commands
+# Test
 test:
 	@echo "Running all tests..."
 	dotnet test Mottu.Tests/Mottu.Tests.csproj --verbosity minimal
@@ -31,16 +29,12 @@ test-integration:
 	@echo "Running integration tests..."
 	dotnet test Mottu.Tests/Mottu.Tests.csproj --filter "FullyQualifiedName~IntegrationTests" --verbosity minimal
 
-test-verbose:
-	@echo "Running all tests with verbose output..."
-	dotnet test Mottu.Tests/Mottu.Tests.csproj --verbosity normal
 
-# Build commands
-build:
+# Build
 	@echo "Building solution..."
 	dotnet build
 
-# Docker commands
+# Docker
 up:
 	@echo "Starting Docker containers..."
 	@echo "Step 1: Starting PostgreSQL and RabbitMQ..."
@@ -64,7 +58,7 @@ restart:
 	@echo "Restarting Docker containers..."
 	docker-compose restart
 
-# Logs commands
+# Logs
 logs:
 	docker-compose logs -f
 
@@ -77,12 +71,12 @@ logs-db:
 logs-rabbitmq:
 	docker-compose logs -f rabbitmq
 
-# Database commands
+# Database
 migrate:
 	@echo "Applying database migrations..."
 	dotnet ef database update --project Mottu.Infrastructure/Mottu.Infrastructure.csproj --startup-project Mottu.Api/Mottu.Api.csproj --connection "Host=localhost;Port=5432;Database=mottudb;Username=mottuuser;Password=mottupass"
 
-# Clean commands
+# Clean
 clean:
 	@echo "Cleaning build artifacts..."
 	dotnet clean
