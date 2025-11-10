@@ -115,20 +115,23 @@ public class LocacaoCalculoTests
     }
 
     [Fact]
-    public void CalcularDiariasAdicionais_DevolucaoAtrasada_DeveCobrar50ReaisPorDia()
+    public void CalcularDiariasAdicionais_DevolucaoAtrasada_DeveCobrarDiariaNormalMais50ReaisPorDia()
     {
         // Arrange
-        var baseTotalValue = 210.00m; // 7 day plan
+        var planDays = 7;
+        var dailyRate = dailyRates[planDays]; // R$ 30,00 para plano de 7 dias
+        var baseTotalValue = dailyRate * planDays; // 210.00
         var delayDays = 3;
-        var additionalDailyRate = 50.00m;
         
         // Act
-        var additionalValue = delayDays * additionalDailyRate; // 150.00
-        var finalTotalValue = baseTotalValue + additionalValue; // 210 + 150 = 360
+        // For each additional day: charge normal daily rate + R$ 50.00 fixed additional
+        var additionalValuePerDay = dailyRate + 50.00m; // 30.00 + 50.00 = 80.00
+        var additionalValue = delayDays * additionalValuePerDay; // 3 * 80.00 = 240.00
+        var finalTotalValue = baseTotalValue + additionalValue; // 210 + 240 = 450
         
         // Assert
-        Assert.Equal(150.00m, additionalValue);
-        Assert.Equal(360.00m, finalTotalValue);
+        Assert.Equal(240.00m, additionalValue);
+        Assert.Equal(450.00m, finalTotalValue);
     }
 
     [Fact]

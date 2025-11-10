@@ -47,15 +47,15 @@ if (builder.Environment.EnvironmentName == "Testing")
 }
 else
 {
-    builder.Services.AddDbContext<MottuDbContext>(options =>
-    {
-        options.UseNpgsql(connectionString,
-            npgsqlOptions => 
-            {
-                npgsqlOptions.MigrationsAssembly(typeof(MottuDbContext).Assembly.FullName);
-            }
-        );
-    });
+builder.Services.AddDbContext<MottuDbContext>(options =>
+{
+    options.UseNpgsql(connectionString,
+        npgsqlOptions => 
+        {
+            npgsqlOptions.MigrationsAssembly(typeof(MottuDbContext).Assembly.FullName);
+        }
+    );
+});
 }
 
 // --- RabbitMQ Configuration ---
@@ -532,7 +532,9 @@ app.MapPut("/locacoes/{id:int}/devolucao", async (MottuDbContext db, int id, Loc
     else if (actualEndDate > expectedEndDate)
     {
         var additionalDays = (actualEndDate - expectedEndDate).Days;
-        var additionalValue = 50.00m * additionalDays; // R$ 50.00 per additional day
+        // For each additional day: charge normal daily rate + R$ 50.00 fixed additional
+        var additionalValuePerDay = dailyRate + 50.00m;
+        var additionalValue = additionalValuePerDay * additionalDays;
         totalValue = rental.ValorTotal + additionalValue;
     }
     // If returned exactly on expected date, keep original value
