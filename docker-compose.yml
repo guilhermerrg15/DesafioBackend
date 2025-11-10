@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: mottuuser
+      POSTGRES_PASSWORD: mottupass
+      POSTGRES_DB: mottudb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  mottu_api:
+    build:
+      context: .
+      dockerfile: Mottu.Api/Dockerfile
+    container_name: mottu_api
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DATABASE_URL: Host=postgres_db;Port=5432;Database=mottudb;Username=mottuuser;Password=mottupass
+      RABBITMQ_CONNECTION: amqp://mottu_admin:mottu_secure_pass_2024!@rabbitmq:5672/
+    ports:
+      - "5001:8080"
+    depends_on:
+      - postgres_db
+      - rabbitmq
+    volumes:
+      - .:/src
+      - /src/Mottu.Api/bin
+
+      - ./storage:/app/storage
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"   # Porta AMQP
+      - "15672:15672" # Porta Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: mottu_admin
+      RABBITMQ_DEFAULT_PASS: mottu_secure_pass_2024!
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
