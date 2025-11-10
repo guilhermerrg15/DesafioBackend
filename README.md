@@ -2,22 +2,6 @@
 
 API REST desenvolvida em .NET 9.0 para gerenciar aluguel de motos e entregadores, com sistema de mensageria para notificações.
 
-## Índice
-
-- [Requisitos](#requisitos)
-- [Tecnologias](#tecnologias)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Como Executar](#como-executar)
-- [Início Rápido](#início-rápido)
-- [Endpoints da API](#endpoints-da-api)
-- [Exemplos de Uso](#exemplos-de-uso)
-- [Configuração](#configuração)
-- [Banco de Dados](#banco-de-dados)
-- [Sistema de Mensageria](#sistema-de-mensageria)
-- [Swagger](#swagger)
-- [Regras de Negócio](#regras-de-negócio)
-- [Testes Unitários](#testes-unitários)
-
 ---
 
 ## Tecnologias
