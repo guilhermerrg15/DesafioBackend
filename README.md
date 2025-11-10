@@ -382,7 +382,7 @@ As configurações podem ser definidas no `docker-compose.yml` ou `appsettings.j
 
 ---
 
-## 🗄️ Banco de Dados
+## Banco de Dados
 
 ### Tabelas
 
