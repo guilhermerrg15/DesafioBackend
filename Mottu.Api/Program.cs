@@ -154,7 +154,7 @@ app.MapGet("/motos/{id:int}", async (MottuDbContext db, int id) =>
     {
         return Results.Ok(moto);
     }
-
+    
     return Results.NotFound(new { message = $"Moto with ID '{id}' not found." });
 })
 .WithName("GetMotoById");
